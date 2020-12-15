@@ -1,18 +1,18 @@
 package scanner
 
 import (
+	"fmt"
 	"go/ast"
 	"go/constant"
 	"go/token"
-
-	"golang.org/x/tools/go/packages"
-
 	"go/types"
+	"os"
 
 	"github.com/dave/astrid"
 	"github.com/dave/brenda"
 	"github.com/dave/courtney/shared"
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/packages"
 )
 
 // CodeMap scans a number of packages for code to exclude
@@ -59,16 +59,30 @@ func (c *CodeMap) addExclude(fpath string, line int) {
 // LoadProgram uses the loader package to load and process the source for a
 // number or packages.
 func (c *CodeMap) LoadProgram() error {
-
 	var patterns []string
 	for _, p := range c.setup.Packages {
 		patterns = append(patterns, p.Path)
 	}
 	wd, err := c.setup.Env.Getwd()
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
-	cfg := &packages.Config{Dir: wd, Mode: packages.LoadSyntax}
+
+	cfg := &packages.Config{
+		Dir: wd,
+		Mode: packages.NeedName | packages.NeedFiles | packages.NeedCompiledGoFiles |
+			packages.NeedImports | packages.NeedTypes | packages.NeedTypesSizes |
+			packages.NeedSyntax | packages.NeedTypesInfo,
+		Env: append(os.Environ()),
+	}
+
+	// add a recover to catch a panic and add some context to the error
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			panic(fmt.Sprintf("%+v", errors.Errorf("Panic in packages.Load: %s", panicErr)))
+		}
+	}()
+
 	pkgs, err := packages.Load(cfg, patterns...)
 
 	/*
@@ -98,7 +112,7 @@ func (c *CodeMap) ScanPackages() error {
 			fset:    p.Fset,
 		}
 		if err := pm.ScanPackage(); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	return nil
@@ -113,7 +127,7 @@ func (p *PackageMap) ScanPackage() error {
 			matcher:    astrid.NewMatcher(p.pkg.TypesInfo.Uses, p.pkg.TypesInfo.Defs),
 		}
 		if err := fm.FindExcludes(); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	return nil
@@ -136,7 +150,7 @@ func (f *FileMap) FindExcludes() error {
 		return b
 	})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	for _, cg := range f.file.Comments {
 		f.inspectComment(cg)
@@ -239,7 +253,7 @@ func (f *FileMap) inspectNode(node ast.Node) (bool, error) {
 func (f *FileMap) inspectCase(stmt *ast.CaseClause, falseExpr ...ast.Expr) error {
 	s := brenda.NewSolver(f.fset, f.pkg.TypesInfo.Uses, f.pkg.TypesInfo.Defs, f.boolOr(stmt.List), falseExpr...)
 	if err := s.SolveTrue(); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	f.processResults(s, &ast.BlockStmt{List: stmt.Body})
 	return nil
@@ -264,7 +278,7 @@ func (f *FileMap) inspectIf(stmt *ast.IfStmt, falseExpr ...ast.Expr) error {
 	// main if block
 	s := brenda.NewSolver(f.fset, f.pkg.TypesInfo.Uses, f.pkg.TypesInfo.Defs, stmt.Cond, falseExpr...)
 	if err := s.SolveTrue(); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	f.processResults(s, stmt.Body)
 
@@ -274,7 +288,7 @@ func (f *FileMap) inspectIf(stmt *ast.IfStmt, falseExpr ...ast.Expr) error {
 		// else block
 		s := brenda.NewSolver(f.fset, f.pkg.TypesInfo.Uses, f.pkg.TypesInfo.Defs, stmt.Cond, falseExpr...)
 		if err := s.SolveFalse(); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		f.processResults(s, e)
 
@@ -283,7 +297,7 @@ func (f *FileMap) inspectIf(stmt *ast.IfStmt, falseExpr ...ast.Expr) error {
 		// else if block
 		falseExpr = append(falseExpr, stmt.Cond)
 		if err := f.inspectIf(e, falseExpr...); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	return nil
@@ -294,6 +308,7 @@ func (f *FileMap) processResults(s *brenda.Solver, block *ast.BlockStmt) {
 		if !match.Match && !match.Inverse {
 			continue
 		}
+
 		found, op, expr := f.isErrorComparison(expr)
 		if !found {
 			continue
@@ -312,6 +327,7 @@ func (f *FileMap) isErrorComparison(e ast.Expr) (found bool, sign token.Token, e
 		}
 		xErr := f.isError(b.X)
 		yNil := f.isNil(b.Y)
+
 		if xErr && yNil {
 			return true, b.Op, b.X
 		}

@@ -22,6 +22,9 @@ func TestParseArgs(t *testing.T) {
 	bpath, bdir, err := b.Package("a/b", map[string]string{
 		"b.go": `package b`,
 	})
+	cpath, cdir, err := b.Package("a/c", map[string]string{
+		"c.go": `package c`,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,6 +48,10 @@ func TestParseArgs(t *testing.T) {
 		Dir:  bdir,
 		Path: bpath,
 	}
+	expectedC := shared.PackageSpec{
+		Dir:  cdir,
+		Path: cpath,
+	}
 
 	if err := setup.Parse([]string{"."}); err != nil {
 		t.Fatal(err)
@@ -63,13 +70,16 @@ func TestParseArgs(t *testing.T) {
 	if err := setup.Parse(nil); err != nil {
 		t.Fatal(err)
 	}
-	if len(setup.Packages) != 2 {
+	if len(setup.Packages) != 3 {
 		t.Fatalf("Error in ParseArgs - wrong number of packages. Expected 2, got %d", len(setup.Packages))
 	}
-	if setup.Packages[0] != expectedA && setup.Packages[0] != expectedB {
+	if setup.Packages[0] != expectedA && setup.Packages[0] != expectedB && setup.Packages[0] != expectedC {
 		t.Fatal("Error in ParseArgs - wrong package.")
 	}
-	if setup.Packages[1] != expectedA && setup.Packages[1] != expectedB {
+	if setup.Packages[1] != expectedA && setup.Packages[1] != expectedB && setup.Packages[1] != expectedC {
+		t.Fatal("Error in ParseArgs - wrong package.")
+	}
+	if setup.Packages[2] != expectedA && setup.Packages[2] != expectedB && setup.Packages[2] != expectedC {
 		t.Fatal("Error in ParseArgs - wrong package.")
 	}
 
@@ -105,5 +115,4 @@ func TestParseArgs(t *testing.T) {
 	if setup.Packages[0] != expectedB {
 		t.Fatalf("Error in ParseArgs - wrong package. Expected %#v. Got %#v.", expectedB, setup.Packages[0])
 	}
-
 }
