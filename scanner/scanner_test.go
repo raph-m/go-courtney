@@ -2,6 +2,7 @@ package scanner_test
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -35,6 +36,77 @@ func TestSingle(t *testing.T) {
 		`,
 	}
 	test(t, tests)
+}
+
+func TestErrAbort(t *testing.T) {
+	source := `package a
+
+		func abortWithErr(error)
+		func oops() error
+		
+		func a() {
+			err := oops()
+			if err != nil {
+				abortWithError(err)
+				return
+			}
+		}
+	`
+
+	for _, excludeErrNoReturnParam := range []bool{true, false} {
+		t.Run(fmt.Sprintf("excludeErrNoReturnParam=%v", excludeErrNoReturnParam), func(t *testing.T) {
+			env := vos.Mock()
+			b, err := builder.New(env, "ns", true)
+			if err != nil {
+				t.Fatalf(fmt.Sprintf("%+v", err))
+			}
+			defer b.Cleanup()
+
+			ppath, pdir, err := b.Package("a", map[string]string{
+				"a.go": source,
+			})
+			if err != nil {
+				t.Fatalf(fmt.Sprintf("%+v", err))
+			}
+
+			paths := patsy.NewCache(env)
+			setup := &shared.Setup{
+				Env:   env,
+				Paths: paths,
+				Options: shared.Options{
+					ExcludeErrNoReturnParam: excludeErrNoReturnParam,
+				},
+			}
+			if err := setup.Parse([]string{ppath}); err != nil {
+				t.Fatalf(fmt.Sprintf("%+v", err))
+			}
+
+			cm := scanner.New(setup)
+
+			if err := cm.LoadProgram(); err != nil {
+				t.Fatalf(fmt.Sprintf("%+v", err))
+			}
+
+			if err := cm.ScanPackages(); err != nil {
+				t.Fatalf(fmt.Sprintf("%+v", err))
+			}
+
+			result := cm.Excludes[filepath.Join(pdir, "a.go")]
+
+			if excludeErrNoReturnParam {
+				if len(result) != 1 || !result[10] {
+					log.Fatalf("Expected line 10 to be excluded, got %v", result)
+				}
+
+			} else {
+				if len(result) != 0 {
+					log.Fatalf("Expected no exclude lines, got %v", result)
+				}
+			}
+
+			fmt.Printf("%+v \n", result)
+		})
+	}
 }
 
 func TestSwitchCase(t *testing.T) {
@@ -689,52 +761,50 @@ func TestComments(t *testing.T) {
 
 func test(t *testing.T, tests map[string]string) {
 	for name, source := range tests {
-		for _, gomod := range []bool{true, false} {
-			t.Run(fmt.Sprintf("%s,gomod=%v", name, gomod), func(t *testing.T) {
-				env := vos.Mock()
-				b, err := builder.New(env, "ns", gomod)
-				if err != nil {
-					t.Fatalf("Error creating builder in %s: %+v", name, err)
-				}
-				defer b.Cleanup()
+		t.Run(fmt.Sprintf("%s", name), func(t *testing.T) {
+			env := vos.Mock()
+			b, err := builder.New(env, "ns", true)
+			if err != nil {
+				t.Fatalf("Error creating builder in %s: %+v", name, err)
+			}
+			defer b.Cleanup()
 
-				ppath, pdir, err := b.Package("a", map[string]string{
-					"a.go": source,
-				})
-				if err != nil {
-					t.Fatalf("Error creating package in %s: %+v", name, err)
-				}
-
-				paths := patsy.NewCache(env)
-				setup := &shared.Setup{
-					Env:   env,
-					Paths: paths,
-				}
-				if err := setup.Parse([]string{ppath}); err != nil {
-					t.Fatalf("Error parsing args in %s: %+v", name, err)
-				}
-
-				cm := scanner.New(setup)
-
-				if err := cm.LoadProgram(); err != nil {
-					t.Fatalf("Error loading program in %s: %+v", name, err)
-				}
-
-				if err := cm.ScanPackages(); err != nil {
-					t.Fatalf("Error scanning packages in %s: %+v", name, err)
-				}
-
-				result := cm.Excludes[filepath.Join(pdir, "a.go")]
-
-				for i, line := range strings.Split(source, "\n") {
-					expected := strings.HasSuffix(line, "// *") ||
-						strings.HasSuffix(line, "//notest") ||
-						strings.HasSuffix(line, "// notest")
-					if result[i+1] != expected {
-						t.Fatalf("Unexpected state in %s, line %d: %s\n", name, i, strconv.Quote(strings.Trim(line, "\t")))
-					}
-				}
+			ppath, pdir, err := b.Package("a", map[string]string{
+				"a.go": source,
 			})
-		}
+			if err != nil {
+				t.Fatalf("Error creating package in %s: %+v", name, err)
+			}
+
+			paths := patsy.NewCache(env)
+			setup := &shared.Setup{
+				Env:   env,
+				Paths: paths,
+			}
+			if err := setup.Parse([]string{ppath}); err != nil {
+				t.Fatalf("Error parsing args in %s: %+v", name, err)
+			}
+
+			cm := scanner.New(setup)
+
+			if err := cm.LoadProgram(); err != nil {
+				t.Fatalf("Error loading program in %s: %+v", name, err)
+			}
+
+			if err := cm.ScanPackages(); err != nil {
+				t.Fatalf("Error scanning packages in %s: %+v", name, err)
+			}
+
+			result := cm.Excludes[filepath.Join(pdir, "a.go")]
+
+			for i, line := range strings.Split(source, "\n") {
+				expected := strings.HasSuffix(line, "// *") ||
+					strings.HasSuffix(line, "//notest") ||
+					strings.HasSuffix(line, "// notest")
+				if result[i+1] != expected {
+					t.Fatalf("Unexpected state in %s, line %d: %s\n", name, i, strconv.Quote(strings.Trim(line, "\t")))
+				}
+			}
+		})
 	}
 }
