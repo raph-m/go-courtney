@@ -7,11 +7,11 @@ import (
 
 	"path/filepath"
 
-	"github.com/dave/courtney/scanner"
-	"github.com/dave/courtney/shared"
 	"github.com/dave/patsy"
 	"github.com/dave/patsy/builder"
 	"github.com/dave/patsy/vos"
+	"github.com/geoah/courtney/scanner"
+	"github.com/geoah/courtney/shared"
 )
 
 func TestSingle(t *testing.T) {
