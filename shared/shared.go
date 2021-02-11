@@ -3,8 +3,8 @@ package shared
 import (
 	"strings"
 
-	"github.com/dave/patsy"
-	"github.com/dave/patsy/vos"
+	"github.com/geoah/go-patsy"
+	"github.com/geoah/go-patsy/vos"
 )
 
 // Setup holds globals, environment and command line flags for the courtney

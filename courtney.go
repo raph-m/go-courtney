@@ -8,11 +8,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/dave/patsy"
-	"github.com/dave/patsy/vos"
-	"github.com/geoah/courtney/scanner"
-	"github.com/geoah/courtney/shared"
-	"github.com/geoah/courtney/tester"
+	"github.com/geoah/go-courtney/scanner"
+	"github.com/geoah/go-courtney/shared"
+	"github.com/geoah/go-courtney/tester"
+	"github.com/geoah/go-patsy"
+	"github.com/geoah/go-patsy/vos"
 )
 
 func main() {

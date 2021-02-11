@@ -2,10 +2,12 @@ github.com/dave/astrid v0.0.0-20170323122508-8c2895878b14 h1:YI1gOOdmMk3xodBao7f
 github.com/dave/astrid v0.0.0-20170323122508-8c2895878b14/go.mod h1:Sth2QfxfATb/nW4EsrSi2KyJmbcniZ8TgTaji17D6ms=
 github.com/dave/brenda v1.1.0 h1:Sl1LlwXnbw7xMhq3y2x11McFu43AjDcwkllxxgZ3EZw=
 github.com/dave/brenda v1.1.0/go.mod h1:4wCUr6gSlu5/1Tk7akE5X7UorwiQ8Rij0SKH3/BGMOM=
+github.com/dave/patsy v0.0.0-20170606133301-2245ba804d71 h1:KRttsFDmfdLsb6wZPb4sesNbJd8c5HzZSZbsB6w7xPo=
+github.com/dave/patsy v0.0.0-20170606133301-2245ba804d71/go.mod h1:QoL10ED5VDNgf52lD3oZY9WU2Ey6UwXvuLuc65u1pVk=
+github.com/geoah/go-patsy v0.0.0-20210211113242-04adec9e6a72 h1:2NUM59EP3lCpY3whOsGoxX3IQCiY+NQCR96NXTMvixw=
+github.com/geoah/go-patsy v0.0.0-20210211113242-04adec9e6a72/go.mod h1:jwJ2N2f1X3nYWEuacoZzOc/xXEL4jXncI12M0OEeRHc=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-github.com/rubensayshi/patsy v0.0.0-20201218105235-7988f8cd613c h1:MSnQxBeED4EwbDZDzgY/MYJg8ipn6Qb5HDlJzQx10jg=
-github.com/rubensayshi/patsy v0.0.0-20201218105235-7988f8cd613c/go.mod h1:qfR88CgEGLoiqDaE+xxDCi5QA5v4vUoW0UCX2Nd5Tlc=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
