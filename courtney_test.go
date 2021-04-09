@@ -12,7 +12,7 @@ import (
 
 	"os"
 
-	"github.com/geoah/go-courtney/shared"
+	"github.com/raph-m/go-courtney/shared"
 	"github.com/geoah/go-patsy"
 	"github.com/geoah/go-patsy/builder"
 	"github.com/geoah/go-patsy/vos"

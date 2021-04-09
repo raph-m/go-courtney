@@ -8,9 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/geoah/go-courtney/scanner"
-	"github.com/geoah/go-courtney/shared"
-	"github.com/geoah/go-courtney/tester"
+	"github.com/raph-m/go-courtney/scanner"
+	"github.com/raph-m/go-courtney/shared"
+	"github.com/raph-m/go-courtney/tester"
 	"github.com/geoah/go-patsy"
 	"github.com/geoah/go-patsy/vos"
 )

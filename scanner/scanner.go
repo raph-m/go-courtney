@@ -9,7 +9,7 @@ import (
 
 	"github.com/dave/astrid"
 	"github.com/dave/brenda"
-	"github.com/geoah/go-courtney/shared"
+	"github.com/raph-m/go-courtney/shared"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )

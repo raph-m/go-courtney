@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/geoah/go-courtney/shared"
-	"github.com/geoah/go-courtney/tester/logger"
-	"github.com/geoah/go-courtney/tester/merge"
+	"github.com/raph-m/go-courtney/shared"
+	"github.com/raph-m/go-courtney/tester/logger"
+	"github.com/raph-m/go-courtney/tester/merge"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/cover"
 )

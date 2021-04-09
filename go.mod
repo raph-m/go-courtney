@@ -1,4 +1,4 @@
-module github.com/geoah/go-courtney
+module github.com/raph-m/go-courtney
 
 go 1.15
 
